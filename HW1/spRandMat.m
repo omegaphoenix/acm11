@@ -1,5 +1,5 @@
 function randSymPosSparseMat = spRandMat(n)
-% RANDMAT Produce a random symmetric, positive definite, sparse n x n matrix
+% SPRANDMAT Produce a random symmetric, positive definite, sparse n x n matrix
 
 % Construct a random matrix A with non-zero density of 0.05
 density = 0.05;
