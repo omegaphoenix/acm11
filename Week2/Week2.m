@@ -1,28 +1,28 @@
-% ACM 11: Introduction to MATLAB   
+% ACM 11: Introduction to MATLAB
 
 %% Week 2: Cells, Errors, Loops, Saving and Loading, Control, M-Files, Scripts, Functions, Figures, 2D-plotting
-clc; clear; close all; 
+clc; clear; close all;
 
-%% Cells 
+%% Cells
 
 % Cell is also a Matlab datatype. A cell is like an array, except that
 % every element of an array must be the same datatype (e.g. a character, or
 % a double). Cells are not restricted like this. In syntax, the
 % difference is that we use { and }; these curly braces are used for both
-% creating and access elements of a cell.  For example, 
+% creating and access elements of a cell.  For example,
 myCell = {'First entry is a string', -.364, [1 2; 3 4], ones(5)}
 
 % This is a useful way to visualize the contents of a cell"
-cellplot(myCell); 
+cellplot(myCell);
 title('Cell Visualization');
 
 % For much more information on cells: doc Cell Arrays
 
 %% Error Messages
 %{
-There are two things we'd like to do with errors: 
-(1) when we write our own code, we might want to "throw" an error, and 
-(2) when Matlab generates an error, we might want to do something special.  
+There are two things we'd like to do with errors:
+(1) when we write our own code, we might want to "throw" an error, and
+(2) when Matlab generates an error, we might want to do something special.
 %}
 
 % (1)  When we throw an error, execution will stop.

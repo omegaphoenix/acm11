@@ -21,5 +21,7 @@ B = [yApprox(:,1) xApprox(:,1) (xApprox(:,2) + yApprox(:,2))...
       xApprox(:,3) yApprox(:,3)];
 % How far to shift diagonals
 diag = [-ny -1, 0, 1 ny];
+
+% Construct sparse diagonal matrix
 L = spdiags(B, diag, nxny, nxny);
 end
