@@ -4,9 +4,11 @@ function distances = FWalg(adjacencyMat)
 
 % Initialize D0
 numNodes = length(adjacencyMat);
-% Initialize everything to Infinity except the node to itself
+% Initialize every path to Infinity except the node to itself
 distances = 1 ./ eye(numNodes) - 1;
+
 % Add paths between adjacent nodes
+adjacencyMat(adjacencyMat == 0) = Inf; % Set missing paths to infinity
 distances = min(distances, adjacencyMat);
 
 for k = 1:numNodes

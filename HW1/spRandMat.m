@@ -6,6 +6,6 @@ density = 0.05;
 randomMat = sprand(n, n, density);
 
 % Return A^T A + I
-randSymPosSparseMat = transpose(randomMat) * randomMat + eye(n);
+randSymPosSparseMat = transpose(randomMat) * randomMat + speye(n);
 
 end

@@ -172,7 +172,7 @@ z=@(t) cos(5*t);
 ezplot3(x, y, z, [0,10]);
 % ezsurf can plot surfaces of functions of two variables. 
 F=@(x,y) cos(x).*sin(2*y);
-ezsurf(F,[0 10 0 10])
+ezsurf(F,[0 10 0 10]) % surf works with arrays and ezsurf works with functions
 
 %% Saving / Loading figures
 close all;clear;clc;
@@ -270,7 +270,15 @@ clc;clear;close all;
 
 A = [1, 2; 3, 4]
 b = [1; 2]
-x=A\b   % "solves" Ax=b 
+x=A\b   % "solves" Ax=b; has a solution <=> rank A = rank [A, b]
+% Solution is unique <=> rank A == rank [A, b] = n where A is m x n;
+% x = A \ b returns the exact unique solution
+% If infinitely many solution (rank A = rank [A, b] < n),
+% general solution is x = x_0 + null(A), null(A) = {x: Ax = 0}.
+% x = A/b is a particular solution x_0 with the smallest Euclidean norm aka
+% shortest length
+% Solution does not exist <=> rank [A, b] != rank A
+% x = A\b returns a least squres solution of || Ax - b ||_2 -> min
 % Remark: x=b'/A  solves xA=b' 
 
 %{
@@ -290,7 +298,7 @@ If rank(A)==rank([A,b]) => solution exists (1 or inf many)
 If rank([A,b])>rank(A) => no solution => x=A\b finds a least squares "solution".
 %}
 
-% Example: overdetermined system, m>n (more equatoins than unknowns).
+% Example: overdetermined system, m>n (more equations than unknowns).
 A=rand(11,10);  % 11 equations, 10 unknowns
 b=rand(11,1);
 rank(A)
@@ -353,6 +361,12 @@ naiveSolve = @(A,b) inv(A)*b;
 
 % Using Gaussian Elimination
 % Gauss.m
+% Permuted LU decomposition PA = LU
+% P is permutation matrix, exactly one 1 in each row and column;
+% L is special lower triangular
+% U is upper triangular
+% 1. Solve Ly = b_1  for y (easy)
+% 2. Solve Ux = y  for x (easy)
 [ts_Gauss,ns_Gauss] = generateTiming(@Gauss);
 
 % The standard way: "\"

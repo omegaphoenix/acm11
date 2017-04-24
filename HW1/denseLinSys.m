@@ -14,6 +14,6 @@ for n = nValues
     x = S\b;
     timeElapsed = toc;
     % Print time it tookk to solve the linear system
-    fprintf('Took  %f time to solve linear system with n=%i\n', timeElapsed,
-    n);
+    fprintf('Took  %f time to solve linear system with n=%i\n', ...
+        timeElapsed, n);
 end
