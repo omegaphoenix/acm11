@@ -38,5 +38,5 @@ subplot(1, 2, 2);
 surf(x, y, delta_u);
 xlabel('x');
 ylabel('y');
-zlabel('u');
+zlabel('\Delta u');
 title('\Delta u')
