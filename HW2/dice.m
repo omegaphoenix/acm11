@@ -1,3 +1,5 @@
+% Load dice data and determine which die is fair based on relative
+% frequencies.
 load('DiceData.mat');
 faces = [1, 2, 3, 4, 5, 6];
 
