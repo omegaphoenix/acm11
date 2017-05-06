@@ -6,7 +6,7 @@ n=size(A,1);
 
 B = randn(n);
 D = diag(randn(n,1));
-   
+
 %C = A*D*B;
 C = A*(repmat(diag(D),1,n).*B);
 

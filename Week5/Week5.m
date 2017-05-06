@@ -1,6 +1,6 @@
-% ACM 11: Introduction to MATLAB   
+% ACM 11: Introduction to MATLAB
 
-%% Week 5: Eigenvalues, Matix Decompositions, SVD, Regression Analysis  
+%% Week 5: Eigenvalues, Matix Decompositions, SVD, Regression Analysis
 %%         Vectorization, Debugging, and Profiling.
 
 %% Eigenvalues
@@ -8,11 +8,11 @@ close all; clear; clc;
 % Matlab has a good eigenvalue solver called "eig". This is different than
 % "eigs" (which we will cover below; the "s" stands for "sparse", and
 % not to pluralize "eig").  "eig" does different things, depending on the
-% number of outputs: 
-% - If we only have one output, it just returns the eigenvalues in a vector. 
-% - If we have two outputs, it gives the eigenvalues (this time, as the 
+% number of outputs:
+% - If we only have one output, it just returns the eigenvalues in a vector.
+% - If we have two outputs, it gives the eigenvalues (this time, as the
 %   diagonal of a matrix), as well as the eigenvectors.
-clear; 
+clear;
 A = randn(3);
 %The eigenvalues of A are:
 lambda=eig(A)
@@ -21,10 +21,10 @@ lambda=eig(A)
 % eignevalues).
 
 [V,D] = eig(A)
-% The eigenvalues of A are on the diagonal of matrix D and the eigenvectors 
+% The eigenvalues of A are on the diagonal of matrix D and the eigenvectors
 % are the columns of matrix V, so that A*V = V*D.
 
-% Remark: If you don't need the eigenvectors, don't ask for them!  
+% Remark: If you don't need the eigenvectors, don't ask for them!
 % It will slow down the computation.
 
 %% Eigenvalues for sparse matrices
@@ -42,7 +42,7 @@ spy(B); title('Sparsity pattern of the random symmetric matrix');
 % (by "top", we mean those with the greatest magnitude)
 
 disp('largest eigenvalues:')
-D = eigs(B,5) 
+D = eigs(B,5)
 % eigs(B) returns a vector of B's six largest magnitude eigenvalues
 disp('smallest eigenvalues:')
 D = eigs(B,5,'sm')  % "sm" stands for smalest magnitude
@@ -59,37 +59,39 @@ A = rand(3)+eye(3);
 [L,U,P]=lu(A) % the permuted LU decomposition  P*A=L*U
 
 % Cholesky Decompostions
-U=chol(A) % produces an upper triangular matrix U, satisfying U'*U=A. 
-          % chol assumes that A is symmetric. If it is not, chol uses the 
-          % transpose of the upper triangle as the lower triangle. 
+% If A is symmetrix, positive definite (v^T A V > 0 for any lambda neq 0)
+% then A = U'U
+U=chol(A) % produces an upper triangular matrix U, satisfying U'*U=A.
+          % chol assumes that A is symmetric. If it is not, chol uses the
+          % transpose of the upper triangle as the lower triangle.
           % Matrix A must be positive definite: x'*A*x>0 for none zero x.
 L = chol(A, 'lower') % L is lower triangular, L*L'=A.
 
-% Orthogonal-triangular decomposition 
-[Q,R] = qr(A)  %  produces an upper triangular matrix R and an 
+% Orthogonal-triangular decomposition
+[Q,R] = qr(A)  %  produces an upper triangular matrix R and an
                %  othogonal matrix Q so that A = Q*R.
-               %  This decomposition can be also used for solving linear 
+               %  This decomposition can be also used for solving linear
                %  systems: it is more computationally expensive than PLU
-               %  decomposition, but more numerically stable. 
+               %  decomposition, but more numerically stable.
 
 %% Singular Value Decomposition (SVD) - the king of matrix decompositions
 %{
-The SVD is vaguely like a generalization of the eigenvalue decomposition; 
-it gives slightly different information, and it is also more general 
-(i.e. it applies to non-square matrices).  
-We factor a matrix A as the product of three matrices: A = U*S*V'. 
-If A is m-by-n, then 
-- U is m-by-m, unitary U*U'=U'*U=I
-- S is m-by-n, it is zero except on the diagonal. The nonzero diagonal 
-  entries of S are called the singular values, and they are always real 
+The SVD is vaguely like a generalization of the eigenvalue decomposition;
+it gives slightly different information, and it is also more general
+(i.e. it applies to non-square matrices).
+We factor a matrix A as the product of three matrices: A = U*S*V'.
+If A is m-by-n, then
+- U is m-by-m, unitary U*U'=U'*U=I (orthogonal if real, unitary if complex)
+- S is m-by-n, it is zero except on the diagonal. The nonzero diagonal
+  entries of S are called the singular values, and they are always real
   and positive. By convention, they are always listed in decreasing order.
 - V' is n-by-n, unitary V*V'=V'*V=I
 
-In Matlab, the function to compute the SVD is called "svd()", and there is 
-also a sparse version ("svds()").  
+In Matlab, the function to compute the SVD is called "svd()", and there is
+also a sparse version ("svds()").
 %}
 
-clc; clear; 
+clc; clear;
 A = randn(3,5);
 % The vector of singular values of A are:
 s = svd(A)
@@ -104,7 +106,7 @@ close all; clear; clc;
 load durer % Albrecht Durer's Melancholia; Matlab built-in image
 % See: http://www.mathworks.com/help/matlab/learn_matlab/plotting-image-data.html
 figure('Position',[500 200 650 600]);
-image(X); 
+image(X);
 colormap(map);
 axis image
 title('Original Image')
@@ -140,25 +142,25 @@ plot(x,y,'ro');
 % Tools >> Basic fitting
 
 % Another way is to use polyfit: polynomial curve fitting
-% p = polyfit(x,y,n) returns the coefficients for a polynomial p(x) of 
-% degree n that is a best fit (in a least-squares sense) for the data (x,y). 
+% p = polyfit(x,y,n) returns the coefficients for a polynomial p(x) of
+% degree n that is a best fit (in a least-squares sense) for the data (x,y).
 p = polyfit(x,y,1);
 
-yfit = polyval(p,x); % polyval(p,x) returns the value of a polynomial p 
+yfit = polyval(p,x); % polyval(p,x) returns the value of a polynomial p
                      % evaluated at x.
 hold on;
 plot(x,yfit,'-b');
 
 %% Multiple Linear Regression
 % Explain the method in class.
-% B = regress(y,X) 
+% B = regress(y,X)
 % - X is an n-by-p matrix of p predictors at each of n observations.
 % - y is an n-by-1 vector of observed responses.
-% - B is a p-by-1 vector B of coefficient estimates for a multiple linear 
-%     regression of the responses in y on the predictors in x.  
+% - B is a p-by-1 vector B of coefficient estimates for a multiple linear
+%     regression of the responses in y on the predictors in x.
 
 close all;clear;clc;
-load carbig % a dataset that contains various measured variables for 406 
+load carbig % a dataset that contains various measured variables for 406
             % automobiles from the 1970's and 1980's.
 x1 = Weight;
 x2 = Horsepower;
@@ -185,18 +187,18 @@ mesh(X1FIT,X2FIT,YFIT)
 
 %% Vectorization
 
-clear; clc; close all; 
+clear; clc; close all;
 
 %{
-MATLAB is optimized for operations involving matrices and vectors.  
-"Vectorization" is the process of revising loop-based, scalar-oriented 
+MATLAB is optimized for operations involving matrices and vectors.
+"Vectorization" is the process of revising loop-based, scalar-oriented
 code to use MATLAB matrix and vector operations.
 Vectorizing your code is worthwhile for several reasons:
-(1) Performance: Vectorized code often runs much faster than the corresponding 
+(1) Performance: Vectorized code often runs much faster than the corresponding
 code containing loops.
-(2) Less Error Prone: Without loops, vectorized code is often shorter. 
+(2) Less Error Prone: Without loops, vectorized code is often shorter.
 Fewer lines of code mean fewer opportunities to introduce programming errors.
-(3) Appearance: Vectorized mathematical code appears more like the 
+(3) Appearance: Vectorized mathematical code appears more like the
 mathematical expressions found in textbooks, making the code easier to understand.
 
 "Vectorize!" is one of the mantras of MATLAB programming.
@@ -239,10 +241,10 @@ toc
 clear; clc;
 % all(v)  Tests if all elements of v are nonzero (or true)
 % any(v)  Tests if at least one elements of v are nonzero (or true)
-% Illustration: 
+% Illustration:
 a=1;
 b=2;
-x=a+(b-a)*rand(10,1); 
+x=a+(b-a)*rand(10,1);
 y=a+(b-a)*randn(10,1);
 all(x>=a)
 all(y>=a)
@@ -267,7 +269,7 @@ B = cumsum(A)
 % Application: Simulation of Brownian motion
 % W(k,dt)=sqrt(dt)*(Z1+Z2+...+Zk), k=1,...
 % dt - time step, Zj - independent N(0,1) variables
-T=1; N=10000; dt=T/N; 
+T=1; N=10000; dt=T/N;
 tic
 %  W(k,dt)=W(k-1,dt)+ sqrt(dt)*Zk;
 dW=zeros(1,N);
@@ -309,7 +311,7 @@ plot(a);
 hold on;
 plot(1+ind,a(1+ind),'rx')
 
-% How to find local minima? 
+% How to find local minima?
 % ind = find(b(1:end-1)<0 & b(2:end)>0);
 
 %--------------------------------------------------------------
@@ -319,7 +321,7 @@ a=[1,-1,1,-1];
 b=prod(a)
 
 % Application: factorial function
-clear; clc; 
+clear; clc;
 N=10000;
 n=100;
 tic
@@ -328,25 +330,26 @@ for i=1:N
 end
 toc
 tic
-for i=1:N 
+for i=1:N
     prod(1:n);
 end
 toc
 
 % Even though factorial is built-in, it uses cumprod
+% Faster than prod for bigger n (e.g. n = 100000)
 
 %----------------------------------------------------------------
-% B = reshape(A,size) reshapes A using the size vector, size, to define size(B). 
-% For example, reshape(A,[2,3]) reshapes A into a 2-by-3 matrix. 
+% B = reshape(A,size) reshapes A using the size vector, size, to define size(B).
+% For example, reshape(A,[2,3]) reshapes A into a 2-by-3 matrix.
 % size must contain at least 2 elements, and prod(sz) must be the same as numel(A)
 A = rand(4)
 B = reshape(A,2,[]) % B has 2 rows and the automatically calculated # columns
 % If A=rand(5), then B = reshape(A,2,[]) leads to an error.
 
 %-----------------------------------------------------------
-% B = sort(A) sorts the elements of A in ascending order 
+% B = sort(A) sorts the elements of A in ascending order
 % - If A is a vector, then sort(A) sorts the vector elements.
-% - If A is a matrix, then sort(A) treats the columns of A as vectors 
+% - If A is a matrix, then sort(A) treats the columns of A as vectors
 %   and sorts each column.
 % - sort(A,dim) returns the sorted elements of A along dimension dim.
 A=[1, -1, 0; -2, 3, -5]
@@ -356,8 +359,8 @@ sort(A,2)  % sorts rows
 
 %% Debugging
 % Debugging is the process of locating and fixing "bugs" (errors).
-% In Matlab it is most useful in conjunction with "breakpoints."  
-% To add a breakpoint into a line of code, just click the horizontal line 
+% In Matlab it is most useful in conjunction with "breakpoints."
+% To add a breakpoint into a line of code, just click the horizontal line
 % to the left of the line of code. It should turn into a red dot. The dot
 % turns gray if the code has been changed and not saved.  When you run the
 % code, the execution pauses at the breakpoint everytime it reaches the
