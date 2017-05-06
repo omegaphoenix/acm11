@@ -14,6 +14,8 @@ edgeLengths = [sortedCuts(1,:); 1 - sortedCuts(2,:); sortedCuts(2,:) - sortedCut
 % edge which only occurs when the longest edge < 0.5
 sortedLengths = max(edgeLengths) < 0.5;
 
-% Display probbility that the three pieces form the three edges of a
+% Display probility that the three pieces form the three edges of a
 % triangle
-prob = sum(sortedLengths) / N
+prob = sum(sortedLengths) / N;
+fprintf(['The empirical probability that the three pieces form the ' ...
+  'three edges of a triangle is %f\n'], prob);

@@ -4,7 +4,7 @@ function tDevour = timeToMeal(alpha)
 % 2 are at (-10, -a) and (10, -a) with velocities of 25 m/s and raptor 3 is
 % at (0, 2a) with a velocity of 20 m/s
 
-%% timeToMeal(30) = 0.4265
+%% Result: timeToMeal(30) = 0.4265
 
 % Angle in degrees
 alphaDeg = deg2rad(alpha);
