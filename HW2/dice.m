@@ -31,8 +31,27 @@ relFreqDie2 = countDie2 / numel(die2)
 
 % Die one is fair because all the faces occur with +/- 0.01 chance
 % whereas for die two, the relative frequencies differ by over 0.3.
+% We confirm this result below using a chi-squared test.
 
 %% Chi Squared Test
-expCounts = ones(6, 1) * N/6;
-[h, p, st] = chi2gof(faces, 'Ctrs', faces, 'Frequency', countDie1, 'Expected', expCounts)
-[h, p, st] = chi2gof(faces, 'Ctrs', faces, 'Frequency', countDie2, 'Expected', expCounts)
+expCounts = ones(6, 1) * numel(die1)/6;
+[h1, ~, ~] = chi2gof(faces, 'Ctrs', faces, 'Frequency', countDie1, ...
+  'Expected', expCounts)
+[h2, ~, ~] = chi2gof(faces, 'Ctrs', faces, 'Frequency', countDie2, ...
+  'Expected', expCounts)
+
+% Print die 1 chi squared test results
+fprintf('Using a Chi Squred Goodness of Fit test, we');
+if (~h1)
+  fprintf(' fail to');
+end
+fprintf([' reject the null hypothesis that die 1 is fair on a 5 percent' ...
+  ' significance level.\n']);
+
+% Print die 2 chi squared test results
+fprintf('Using a Chi Squred Goodness of Fit test, we');
+if (~h2)
+  fprintf(' fail to');
+end
+fprintf([' reject the null hypothesis that die 2 is fair on a 5 percent' ...
+  ' significance level.\n']);
