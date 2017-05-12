@@ -1,4 +1,4 @@
-% ACM 11: Introduction to MATLAB   
+% ACM 11: Introduction to MATLAB
 
 %% Week 6: Optimization, Interpolation, Curve Fitting, Numerical Integration
 
@@ -11,8 +11,8 @@ this form:
 Minimize f(x) for x in Omega
 such that g_i(x) <=0  for i =1,...,m
 
-This is called an (mathematical) optimization problem, 
-or sometimes a 'program'. 
+This is called an (mathematical) optimization problem,
+or sometimes a 'program'.
 
 x is an element of R^n, f is the objective function, the g_i are the
 constraint functions, and Omega (a subset of R^n) is the domain.
@@ -23,20 +23,20 @@ it easier:
 
 -  m = 0 (the problem is 'unconstrained')
 
--  f and g_i are linear or quadratic 
+-  f and g_i are linear or quadratic
 
-   Omega is "simple" (all of R^n, an intersection of half-spaces, 
+   Omega is "simple" (all of R^n, an intersection of half-spaces,
       a convex set,..)
-    
+
 -  f and g are convex (definition below)
 
-An important strategy in solving an optimization problem is to write it in 
+An important strategy in solving an optimization problem is to write it in
 the  simplest way possible. A simple yet very important example:
 
-    minimize (log x)^2 
+    minimize (log x)^2
     such that x > 0
 
-is a nonlinear, constrained problem, yet a simple change of variables 
+is a nonlinear, constrained problem, yet a simple change of variables
 y = log(x) lets us solve the quadratic, unconstrained problem
 
     minimize y^2
@@ -48,7 +48,7 @@ a massive difference to the time it takes to solve a problem!
 % MATLAB comes with a useful set of optimization tools in the optimization
 % toolbox (which is available with all of Caltech's MATLAB versions)
 
-%% Root-Finding 
+%% Root-Finding
 %  Finding zeros of functions is very related to minimization.
 %  Indeed, in the simplest version a root-finding method - Newton's method
 %  is minimizing a function by finding a zero of its gradient
@@ -71,16 +71,16 @@ x0=fzero(f,0.5)
 % Function fsolve resolves this problem:
 x0=fsolve(f,0.5)  % It is more general, it solves systems of nonlinear equations
 
-% Why do we need fzero then? 
+% Why do we need fzero then?
 % Let us consider an example:
 f=@(x) x.^3;
-x1=fzero(f,0.5) 
+x1=fzero(f,0.5)
 x2=fsolve(f,0.5)
 % fzero's answer is correct to within machine precision!
 % fsolve gives an approximate solution
 % The goals of two functoin are different:
 % - fzero:  solves accurately simple equations
-% - fsolve: solves approximately compicated (systems of) equations. 
+% - fsolve: solves approximately compicated (systems of) equations.
 
 f1=@(x) x(1).^2+x(2).^2-25;
 f2=@(x) 3*sin(x(1))+4*cos(x(2));
@@ -102,14 +102,14 @@ plot3(x1(1),x1(2),f1(x),'om','MarkerSize',10,'MarkerFaceColor','magenta')
 %% Unconstrained Minimization
 clear; clc; close all;
 f = @(x) 0.1*(x+1).^2 + cos(x);
-ezplot(f); 
+ezplot(f);
 hold on;
 [xmin0, fval0] = fminunc(f,0); % finds minimum of unconstrained function
 [xmin1, fval1] = fminunc(f,1);
 plot([xmin0 xmin1],[fval0 fval1],'rx');
 
 % Or a function of several variable:
-g = @(x) (x(1)-1).^2 + (x(2)-1).^2;  
+g = @(x) (x(1)-1).^2 + (x(2)-1).^2;
 x0 = [2,2];
 [x,gmin] = fminunc(g,x0)
 
@@ -129,57 +129,57 @@ f_wrapped = @(x) f(x,paramVal);
 
 [xmin, fmin] = fminunc(f_wrapped,0)
 
-%% Constrained Minimization 
+%% Constrained Minimization
 
 % Minimization of a single-variable function on fixed interval: fminbnd
 close all; clear; clc
 f = @(x) 4*cos(x) + (x-1).^2 + (x-2).^(2);
 [xmin,fval] = fminbnd(f,0,4);
-ezplot(f); 
+ezplot(f);
 hold on;
 plot(xmin,fval,'rx');
 
 % Linear Programs
 %{
-x=linprog(f,A,b,Aeq,beq,lb,ub): finds the minimum of the following 
+x=linprog(f,A,b,Aeq,beq,lb,ub): finds the minimum of the following
 linear problem:
 
-minimize f'*x 
-s.t. A*x-b <= 0 
+minimize f'*x
+s.t. A*x-b <= 0
      Aeq*x=beq
      lb<=x<=ub
 %}
 
 % Example:
 close all; clear; clc
-f = [-1; -1/3]; 
-A=  [1 1; 1 1/4; 1 -1; -1/4 -1; -1 -1;  -1 1];  
+f = [-1; -1/3];
+A=  [1 1; 1 1/4; 1 -1; -1/4 -1; -1 -1;  -1 1];
 b = [2; 1; 2; 1; -1; 2];
 lb = zeros(2,1);  %lower bounds
-ub = 2*ones(2,1);% upper bounds 
+ub = 2*ones(2,1);% upper bounds
 
 [x,fval,exitflag] = linprog(f,A,b,[],[],lb,ub)
 
 % - x is the solution
-% - fval is the value of the objective function at the solution 
+% - fval is the value of the objective function at the solution
 % - exitflag is a value that describes the reason why linprog stopped
 %     1: Function converged to a solution x.
 %     0,-2,-3,-4,-5,-7: "bad news", for details: doc linprog
 
 % Linearly constrained Quadratic Programs
 %{
-x = quadprog(H,f,A,b,Aeq,beq,lb,ub): finds the minimum of the following 
+x = quadprog(H,f,A,b,Aeq,beq,lb,ub): finds the minimum of the following
 quadratic problem:
 
 Minimize (1/2)*x'*H*x + f'*x
-s.t. A*x-b <= 0 
+s.t. A*x-b <= 0
      Aeq*x=beq
      lb<=x<=ub
 
-Very similar to linprog. 
+Very similar to linprog.
 %}
 clc; clear; close all;
-H = [1 -1; -1 2]; 
+H = [1 -1; -1 2];
 f = [-2; -6];
 A = [1 1; -1 2; 2 1];
 b = [2; 2; 3];
@@ -192,44 +192,44 @@ lb = zeros(2,1);
 %  but many problems of this type are computationally intractable
 doc fmincon
 
-%% Convex Optimization 
+%% Convex Optimization
 %{
 
 If A and B are vectors in R^n, a convex combination of A and B is an
-expression of the form 
+expression of the form
 
 sA +(1-s)B
- 
-where s is a real number in [0,1]. The set of all convex combinations 
-of A and B is thus the line segment between A and B. 
+
+where s is a real number in [0,1]. The set of all convex combinations
+of A and B is thus the line segment between A and B.
 
 A set is convex if it contains all convex combinations of all of its
 poitns. That is, you can 'see' any point in the set from any other point.
 
 A function f:R^n -> R defines a set (its 'epigraph') of all the points in
 R^(n+1) with x_(n+1) >= f(x_1,...,x_n). That is, the set 'above' the
-function. 
+function.
 
 A function is called convex if its epigraph is a convex set. The key
-property of convex functions is that LOCAL minimizers are in fact GLOBAL. 
+property of convex functions is that LOCAL minimizers are in fact GLOBAL.
 
 A convex optimization problem is one in which the objective function, the
-domain, and the constraints are all convex. 
+domain, and the constraints are all convex.
 
-The conventional wisdom is that Matlab is very good at numerical linear 
-algebra and related operations, but is relatively poor at optimization.  
-But there are many excellent 3rd party Matlab applications, some of them 
-free, that do optimization very well.  A particularly simple package is 
+The conventional wisdom is that Matlab is very good at numerical linear
+algebra and related operations, but is relatively poor at optimization.
+But there are many excellent 3rd party Matlab applications, some of them
+free, that do optimization very well.  A particularly simple package is
 "cvx" by Michael Grant and Stephen Boyd.
 
 Check:
  - This (free, excellent) textbook: http://www.stanford.edu/~boyd/cvxbook/
  - The CVX manual: http://web.cvxr.com/cvx/doc/CVX.pdf
 
-This package is not always the (computationally) fastest way to solve a 
-problem, especially a large one, but it is extremely useful for 
-small-to-medium convex programming, and may well be the fastest approach 
-in terms of your own time. 
+This package is not always the (computationally) fastest way to solve a
+problem, especially a large one, but it is extremely useful for
+small-to-medium convex programming, and may well be the fastest approach
+in terms of your own time.
 %}
 
 %% Interpolation
@@ -246,7 +246,7 @@ figure
 subplot(2,2,1)
 plot(x,y,'ob');
 hold on
-plot(x,y,'-r');  % linear interpolation 
+plot(x,y,'-r');  % linear interpolation
 title('Using plot');
 
 % Using interp1
@@ -276,17 +276,17 @@ plot(x,y,'o','MarkerFace','blue')
 % MATLAB represents polynomials by vectors of coefficients
 P = [1 0 2 3]; % corresponds to p(x) =  x^3 + 2*x + 3
 % Evaluating with polyval:
-% y = polyval(p,x) returns the value of a polynomial defined by p evaluated 
-% at x. The input argument p is a vector of length n+1 whose elements are 
+% y = polyval(p,x) returns the value of a polynomial defined by p evaluated
+% at x. The input argument p is a vector of length n+1 whose elements are
 % the coefficients in descending powers of the polynomial to be evaluated.
 xx = linspace(-3,3,100);
 figure
 plot(xx,polyval(P,xx),'.');
 
 % Fitting with polyfit:
-% p = polyfit(x,y,n) returns the coefficients for a polynomial p(x) of 
-% degree n that is a best fit (in a least-squares sense) for the data in y. 
-Pfit = polyfit(x,y,4); 
+% p = polyfit(x,y,n) returns the coefficients for a polynomial p(x) of
+% degree n that is a best fit (in a least-squares sense) for the data in y.
+Pfit = polyfit(x,y,4);
 yfit = polyval(Pfit,[min(x):0.01:max(x)]);
 figure
 plot(x,y,'o','MarkerFace','blue')
@@ -320,13 +320,13 @@ x = linspace(0,pi,n)';
 betaRef = [1 -1 1];
 y = f(betaRef,x) + 0.1*randn(n,1);
 % lsqcurvefit: solves nonlinear curve-fitting problems in least-squares sense
-% beta = lsqcurvefit(f,beta0,x,y) starts at beta0 and finds parameters beta 
-% to best fit the nonlinear function f(beta,x) to the data y 
+% beta = lsqcurvefit(f,beta0,x,y) starts at beta0 and finds parameters beta
+% to best fit the nonlinear function f(beta,x) to the data y
 % (in the least-squares sense).
 % In other words, it solves: ||f(beta,x) - y ||_2 -> min
 
-beta0 = [0.5,0.5,0.5]; 
-% beta0 = [2,2,2]; 
+beta0 = [0.5,0.5,0.5];
+% beta0 = [2,2,2];
 betaEst = lsqcurvefit(f, beta0, x, y)
 figure
 hold on
@@ -345,11 +345,11 @@ betaRef = [1 1];
 y = f(betaRef,x) + 0.1*randn(n,1);
 
 % nonlinear way:
-beta0 = [3, -3]; 
+beta0 = [3, -3];
 betaEst1 = lsqcurvefit(f, beta0, x, y);
 
 % converting to a linear fitting problem
-% take the log: log(y) = m(1) + m(2)*x, where 
+% take the log: log(y) = m(1) + m(2)*x, where
 % m(1)=log(beta(1)) abd m(2)=beta(2)
 logData = log(y);
 A = [ones(length(x),1), x];
@@ -366,21 +366,21 @@ legend('data','ground truth','"nonlinear" fit','"linear" fit');
 %% Numerical Integration (aka quadrature)
 %{
 Numerical integration is the process of approximating the value of an
-integral.  The general technique, called quadrature, is to sample the 
-function f at a few points, interpolate these points piece-wise with a 
-polynomial of degree n, integrate this polynomial exactly, and return this 
-as our approximation.  The interpolation and exact integration can be 
+integral.  The general technique, called quadrature, is to sample the
+function f at a few points, interpolate these points piece-wise with a
+polynomial of degree n, integrate this polynomial exactly, and return this
+as our approximation.  The interpolation and exact integration can be
 combined into one step, so no actual interpolation really happens.
 %}
 
 %{
 Matlab choses gridpoints adaptively. The workhorse routine is "integral":
--   I = integral(f,xmin,xmax) numerically integrates function f 
-from xmin to xmax using using global adaptive quadrature and default 
+-   I = integral(f,xmin,xmax) numerically integrates function f
+from xmin to xmax using using global adaptive quadrature and default
 error tolerances.
--   I=integral(fun,xmin,xmax,Name,Value)  specifies additional options 
-with one or more Name,Value pair arguments, e.g. 
-'AbsTol',1e-12 sets the absolute error tolerance to approximately 12 
+-   I=integral(fun,xmin,xmax,Name,Value)  specifies additional options
+with one or more Name,Value pair arguments, e.g.
+'AbsTol',1e-12 sets the absolute error tolerance to approximately 12
 decimal places of accuracy.
 %}
 
@@ -397,7 +397,7 @@ doc integral2
 doc integral3
 
 %% Dialog Boxes and Waitbar
-% Matlab can popup dialog boxes (see "dialog" or "msgbox").  
+% Matlab can popup dialog boxes (see "dialog" or "msgbox").
 clc; clear; close all;
 msgbox('Mission Accomplished');
 
