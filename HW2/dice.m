@@ -36,9 +36,9 @@ relFreqDie2 = countDie2 / numel(die2)
 %% Chi Squared Test
 expCounts = ones(6, 1) * numel(die1)/6;
 [h1, ~, ~] = chi2gof(faces, 'Ctrs', faces, 'Frequency', countDie1, ...
-  'Expected', expCounts)
+  'Expected', expCounts);
 [h2, ~, ~] = chi2gof(faces, 'Ctrs', faces, 'Frequency', countDie2, ...
-  'Expected', expCounts)
+  'Expected', expCounts);
 
 % Print die 1 chi squared test results
 fprintf('Using a Chi Squred Goodness of Fit test, we');
