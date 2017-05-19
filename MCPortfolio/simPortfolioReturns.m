@@ -1,8 +1,11 @@
-function [firstDecile, mid, lastDecile] = simPortfolioReturns(portSize, ratio)
-% SIMPORTFOLIORETURNS Return 10, 50, and 90 percentile of portfolio returns
-% calculated using a Monte Carlo simulation with 1000 trials of 80 years
-% portSize is the original portfolio size
-% ratio is a 4-vector with the relative ratios of the 4 funds in the portfolio
+function finalPortfolioSizes =...
+  simPortfolioReturns(portSize, ratio, percentiles, years)
+% SIMPORTFOLIORETURNS Return percentiles of portfolio returns
+% calculated using a Monte Carlo simulation with 1000 trials
+% - portSize - the original portfolio size
+% - ratio - a 4-vector with the relative ratios of the funds in the portfolio
+% - percentiles - a vector of percentiles to return
+% - years - number of years to simulate
 % The four funds are VTI (total US stock market), VXUS (total international
 % stock market), BND (total US bond market), and BNDX (total international
 % bond market).
@@ -21,9 +24,9 @@ rng(numFunds);
 
 % Import adjusted price data
 for i=1:1:numFunds
-  filename = strcat(tickers{i}, '_PRICE_2013_2015.txt');
-  temp = importdata(filename, ' ', 15);
-  prices(:, i) = [temp.data(:, [end])];
+    filename = strcat(tickers{i}, '_PRICE_2013_2015.txt');
+    temp = importdata(filename, ' ', 15); % first 15 lines are not data
+    prices(:, i) = [temp.data(:, [end])]; % assume dates are the same
 end
 
 % Convert prices to returns
@@ -46,17 +49,21 @@ expectedReturns = betas * riskPremium + riskFreeRate;
 expLogReturns = log((1 + expectedReturns).^(1/365));
 
 % Check if positive definite before taking Cholensky factor
-positiveDefinite = all(eig(M) > 0)
+positiveDefinite = all(eig(M) > 0);
+% not positive definite if two stocks were perfectly correlated
 if (~positiveDefinite)
-  epsilon = 1e-20
-  M = M + (epsilon * eye(numFunds))
+    fprintf(['Covariance matrix is not positive definite. Did you include'...
+            'the same stock twice?  \n']);
+    % small value to make matrix positive definite without affecting results
+    epsilon = 1e-20;
+    M = M + (epsilon * eye(numFunds));
 end
+
 % Calculate Cholensky factor
 L = chol(M, 'lower');
 
 % Generate numFunds-vectors for every day of the simulation
 marketDaysPerYear = 250;
-years = 30;
 numTrials = 1000;
 % Generate normally distributed random numbers
 s = randn(numFunds, marketDaysPerYear * years * numTrials);
@@ -75,33 +82,43 @@ end
 % Dot product of weight vector and return-vectors
 R = w*r;
 
-% Add 80 years of log returns
+% Add *years* years of log returns
 R = reshape(R, [years * marketDaysPerYear, numTrials]);
 R = sum(R);
 
-% Print some useful daily log return statistics
-minimum = min(R);
-maximum = max(R);
-mu = mean(R);
-med = median(R);
-stdev = std(R);
-skew = skewness(R);
-Cov = cov(r');
-excessKurtosis = kurtosis(R);
-% Jarque-Bera statistic - jbstat
-[h, p, jbstat, critval] = jbtest(R);
-% Chi-Squared probability - p
-[h, p, stats] = chi2gof(R);
-% off diagonals are serial correlation
-serialCorr = (corrcoef(R(2:end), R(1:end-1)));
-% 99% VaR
-ninetyNineVar = prctile(R, 1);
-% 99% Expected Shortfall
-shortfall = mean(R(R <= ninetyNineVar));
+    function finalVal = calcPortfolio(logReturn)
+    % CALCPORTFOLIO Return total portfolio size.
+    % logReturn - the total log return
+        finalVal = exp(logReturn) * portSize;
+    end
 
-% Calculate final portfolio values at 10, 50, 90 percentiles
-firstDecile = exp(prctile(R, 10)) * portSize
-mid = exp(median(R)) * portSize
-lastDecile = exp(prctile(R, 90)) * portSize
+% Print some useful statistics
+minimum = calcPortfolio(min(R));
+fprintf('After %d years with an initial investment of $%.2f:\n',...
+        years, portSize);
+fprintf('Minimimum portfolio size was $%.2f\n', minimum);
+maximum = calcPortfolio(max(R));
+fprintf('Maximum portfolio size was $%.2f\n', maximum);
+mu = calcPortfolio(mean(R));
+fprintf('Average portfolio size was $%.2f\n', mu);
+med = calcPortfolio(median(R));
+fprintf('Median portfolio size was $%.2f\n', mu);
+
+ninetyNineVar = prctile(R, 1);
+ninetyNineVal = calcPortfolio(ninetyNineVar); % 99% Value at Risk
+fprintf('99 percent of the time we will have more than $%.2f\n',...
+        ninetyNineVal);
+
+shortfall = mean(R(R <= ninetyNineVar));
+shortfallVal = calcPortfolio(shortfall); % 99% Expected Shortfall
+fprintf('When we have less than that, we have on average $%.2f\n',...
+        shortfallVal);
+
+% Calculate final portfolio values at specified percentiles
+finalPortfolioSizes = {};
+for i = 1:numel(percentiles)
+  percLogReturn = prctile(R, percentiles(i));
+  finalPortfolioSizes = [finalPortfolioSizes, calcPortfolio(percLogReturn)];
+end
 
 end
