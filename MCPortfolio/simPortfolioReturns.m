@@ -1,43 +1,84 @@
-function [firstDecile, mid, lastDecile] = simPortfolioReturns(percents)
+function [firstDecile, mid, lastDecile] = simPortfolioReturns(portSize, ratio)
 % SIMPORTFOLIORETURNS Return 10, 50, and 90 percentile of portfolio returns
-% calculated using a Monte Carlo simulation
+% calculated using a Monte Carlo simulation with 1000 trials of 80 years
+% portSize is the original portfolio size
+% ratio is a 4-vector with the relative ratios of the 4 funds in the portfolio
+% The four funds are VTI (total US stock market), VXUS (total international
+% stock market), BND (total US bond market), and BNDX (total international
+% bond market).
+% e.g. simPortfolioReturns([1, 1, 1, 1]) is the equal weighted portfolio
+% Assume that {TICKER}_PRICE_2013_2015.txt files exist and have the same
+% date range. We could only go back to 2013 because that was the inception
+% date of the international bond fund, BNDX.
 
-% Build covariance matrix
+% Count funds
 tickers = {'VTI', 'VXUS', 'BND', 'BNDX'};
-for i=1:1:4
+numFunds = numel(ratio);
+assert(numel(ratio) == numel(tickers));
+
+% Set random seed for Monte Carlo
+rng(numFunds);
+
+% Import adjusted price data
+for i=1:1:numFunds
   filename = strcat(tickers{i}, '_PRICE_2013_2015.txt');
   temp = importdata(filename, ' ', 15);
   prices(:, i) = [temp.data(:, [end])];
 end
 
+% Convert prices to returns
+absReturns = diff(prices) ./ prices(1:end-1, :);
 logReturns = diff(log(prices));
 
-M = cov(logReturns)
+% Build covariance matrix
+absCov = cov(absReturns);
+M = cov(logReturns);
+
+% Calculate expected returns using capital asset pricing model (CAPM)
+% which assumes more risk/variance leads to greater returns
+% betas are with respect to the US stock market (VTI)
+riskPremium = .04; % assume stocks return 4% more risk free rate
+riskFreeRate = .0265; % Return on 20 year T-bonds
+
+% beta = cov(A, M) / var(M) where M is the US stock market
+betas = absCov(:,1) / absCov(1,1);
+expectedReturns = betas * riskPremium + riskFreeRate;
+expLogReturns = log(1 + expectedReturns)
 
 % Check if positive definite before taking Cholensky factor
 positiveDefinite = all(eig(M) > 0)
 if (~positiveDefinite)
-  epsilon = 0.0001
-  M = M + (epsilon * eye(4))
+  epsilon = 1e-20
+  M = M + (epsilon * eye(numFunds))
 end
+% Calculate Cholensky factor
 L = chol(M, 'lower');
 
-% Set random seed
-rng(4);
-% Generate 4-vectors for every day of the simulation
+% Generate numFunds-vectors for every day of the simulation
 marketDaysPerYear = 250;
 years = 80;
 numTrials = 1000;
-s = randn(4, marketDaysPerYear * years * numTrials);
+% Generate normally distributed random numbers
+s = randn(numFunds, marketDaysPerYear * years * numTrials);
 % Generate return-vectors
-r = L*s;
+r = L*s; % add variance
+r = [(r(:,1) + expLogReturns(1)), (r(:,2) + expLogReturns(2)),...
+     (r(:,3) + expLogReturns(3)), (r(:,4) + expLogReturns(4))];
 
+% Normalize weight vector
+w = ratio / sum(ratio);
+% Transpose if necessary to handle input in either row or column vector form
+if length(w) ~= numFunds
+  w = w';
+end
 % Dot product of weight vector and return-vectors
-w = percents' / sum(percents);
 R = w*r;
 
-% Statistics in percentage
-size(R)
+% Add 80 years of log returns
+R = reshape(R, [years * marketDaysPerYear, numTrials]);
+R = sum(R);
+
+% Print some useful daily log return statistics
 minimum = min(R)
 maximum = max(R)
 mu = mean(R)
@@ -47,17 +88,19 @@ skew = skewness(R)
 Cov = cov(r')
 excessKurtosis = kurtosis(R)
 % Jarque-Bera statistic - jbstat
-[h,p,jbstat,critval] = jbtest(R)
+[h, p, jbstat, critval] = jbtest(R)
 % Chi-Squared probability - p
-[h,p,stats] = chi2gof(R)
+[h, p, stats] = chi2gof(R)
 % off diagonals are serial correlation
-serialCorr = (corrcoef(R(2:end),R(1:end-1)))
+serialCorr = (corrcoef(R(2:end), R(1:end-1)))
 % 99% VaR
-ninetyNineVar = prctile(R,1)
+ninetyNineVar = prctile(R, 1)
 % 99% Expected Shortfall
 shortfall = mean(R(R <= ninetyNineVar))
-firstDecile = 0
-mid = 0
-lastDecile = 0
+
+% Calculate final portfolio values at 10, 50, 90 percentiles
+firstDecile = exp(prctile(R, 10)) * portSize
+mid = exp(median(R)) * portSize
+lastDecile = exp(prctile(R, 90)) * portSize
 
 end
