@@ -43,7 +43,7 @@ riskFreeRate = .0265; % Return on 20 year T-bonds
 % beta = cov(A, M) / var(M) where M is the US stock market
 betas = absCov(:,1) / absCov(1,1);
 expectedReturns = betas * riskPremium + riskFreeRate;
-expLogReturns = log(1 + expectedReturns)
+expLogReturns = log((1 + expectedReturns).^(1/365));
 
 % Check if positive definite before taking Cholensky factor
 positiveDefinite = all(eig(M) > 0)
@@ -56,14 +56,15 @@ L = chol(M, 'lower');
 
 % Generate numFunds-vectors for every day of the simulation
 marketDaysPerYear = 250;
-years = 80;
+years = 30;
 numTrials = 1000;
 % Generate normally distributed random numbers
 s = randn(numFunds, marketDaysPerYear * years * numTrials);
 % Generate return-vectors
 r = L*s; % add variance
-r = [(r(:,1) + expLogReturns(1)), (r(:,2) + expLogReturns(2)),...
-     (r(:,3) + expLogReturns(3)), (r(:,4) + expLogReturns(4))];
+for i = 1:numFunds
+  r(i,:) = r(i,:) + expLogReturns(i);
+end
 
 % Normalize weight vector
 w = ratio / sum(ratio);
@@ -79,24 +80,24 @@ R = reshape(R, [years * marketDaysPerYear, numTrials]);
 R = sum(R);
 
 % Print some useful daily log return statistics
-minimum = min(R)
-maximum = max(R)
-mu = mean(R)
-med = median(R)
-stdev = std(R)
-skew = skewness(R)
-Cov = cov(r')
-excessKurtosis = kurtosis(R)
+minimum = min(R);
+maximum = max(R);
+mu = mean(R);
+med = median(R);
+stdev = std(R);
+skew = skewness(R);
+Cov = cov(r');
+excessKurtosis = kurtosis(R);
 % Jarque-Bera statistic - jbstat
-[h, p, jbstat, critval] = jbtest(R)
+[h, p, jbstat, critval] = jbtest(R);
 % Chi-Squared probability - p
-[h, p, stats] = chi2gof(R)
+[h, p, stats] = chi2gof(R);
 % off diagonals are serial correlation
-serialCorr = (corrcoef(R(2:end), R(1:end-1)))
+serialCorr = (corrcoef(R(2:end), R(1:end-1)));
 % 99% VaR
-ninetyNineVar = prctile(R, 1)
+ninetyNineVar = prctile(R, 1);
 % 99% Expected Shortfall
-shortfall = mean(R(R <= ninetyNineVar))
+shortfall = mean(R(R <= ninetyNineVar));
 
 % Calculate final portfolio values at 10, 50, 90 percentiles
 firstDecile = exp(prctile(R, 10)) * portSize
